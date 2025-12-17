@@ -1,0 +1,302 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://orbitgw.com/bootstrap/css/bootstrap.min.css">
+    <script src="https://orbitgw.com/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/css/main.css">
+    <title>OSTP Specification | v0.1</title>
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg bg-white">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">OSTP</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/spec/">Specifications</a>
+                <a class="nav-link" href="https://github.com/orbitgw/OSTP">Repository</a>
+            </div>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <div class="content">
+            <h1 id="ostp-orbitgws-secure-transfer-protocol-specification-version-01">OSTP (ORBITGW&#39;s Secure Transfer Protocol) Specification Version 0.1</h1>
+<h2 id="abstract">Abstract</h2>
+<p>This document specifies OSTP (ORBITGW&#39;s Secure Transfer Protocol), a secure transport layer protocol designed for reliable data transmission over TCP connections. OSTP provides authentication, confidentiality, and integrity protection using pre-shared keys and AES-256-GCM encryption.</p>
+<h2 id="status-of-this-memo">Status of This Memo</h2>
+<p>This document specifies an experimental protocol for the community. It does not specify an Internet standard.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#ostp-orbitgws-secure-transfer-protocol-specification-version-01">OSTP (ORBITGW&#39;s Secure Transfer Protocol) Specification Version 0.1</a><ul>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#status-of-this-memo">Status of This Memo</a></li>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li><a href="#1-introduction">1. Introduction</a></li>
+<li><a href="#2-requirements-notation">2. Requirements Notation</a></li>
+<li><a href="#3-terminology">3. Terminology</a></li>
+<li><a href="#4-protocol-overview">4. Protocol Overview</a></li>
+<li><a href="#5-key-derivation">5. Key Derivation</a><ul>
+<li><a href="#51-ask-derivation">5.1. ASK Derivation</a></li>
+<li><a href="#52-ssk-derivation">5.2. SSK Derivation</a></li>
+</ul>
+</li>
+<li><a href="#6-message-formats">6. Message Formats</a><ul>
+<li><a href="#61-encryption-format">6.1. Encryption Format</a></li>
+<li><a href="#62-client-handshake-message">6.2. Client Handshake Message</a></li>
+<li><a href="#63-server-handshake-response-success">6.3. Server Handshake Response (Success)</a></li>
+<li><a href="#64-server-handshake-response-failure">6.4. Server Handshake Response (Failure)</a></li>
+<li><a href="#65-data-transfer-message">6.5. Data Transfer Message</a></li>
+</ul>
+</li>
+<li><a href="#7-handshake-protocol">7. Handshake Protocol</a><ul>
+<li><a href="#71-client-initialization">7.1. Client Initialization</a></li>
+<li><a href="#72-server-processing">7.2. Server Processing</a></li>
+<li><a href="#73-server-response-success-case">7.3. Server Response (Success Case)</a></li>
+<li><a href="#74-server-response-failure-case">7.4. Server Response (Failure Case)</a></li>
+<li><a href="#75-client-final-verification">7.5. Client Final Verification</a></li>
+</ul>
+</li>
+<li><a href="#8-data-transfer-protocol">8. Data Transfer Protocol</a></li>
+<li><a href="#9-security-considerations">9. Security Considerations</a><ul>
+<li><a href="#91-key-management">9.1. Key Management</a></li>
+<li><a href="#92-cryptographic-security">9.2. Cryptographic Security</a></li>
+<li><a href="#93-protocol-security">9.3. Protocol Security</a></li>
+<li><a href="#94-implementation-considerations">9.4. Implementation Considerations</a></li>
+</ul>
+</li>
+<li><a href="#10-iana-considerations">10. IANA Considerations</a></li>
+<li><a href="#license-and-copyright-notice">License and Copyright Notice</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>OSTP is a secure transport protocol that establishes authenticated and encrypted communication channels between clients and servers using pre-shared keys. The protocol employs a two-phase handshake mechanism to establish session keys and subsequently protects all data transmission with AES-256-GCM encryption.</p>
+<h2 id="2-requirements-notation">2. Requirements Notation</h2>
+<p>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;NOT RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this document are to be interpreted as described in BCP 14 <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC2119</a> <a href="https://www.rfc-editor.org/rfc/rfc8174">RFC8174</a> when, and only when, they appear in all capitals, as shown here.</p>
+<h2 id="3-terminology">3. Terminology</h2>
+<p>The following table defines the key terms used in this specification:</p>
+<table>
+<thead>
+<tr>
+<th align="left">Term</th>
+<th align="left">Acronym</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Pre-shared Secret Key</td>
+<td align="left">PSK</td>
+<td align="left">A 32-byte symmetric key shared between client and server through secure means prior to communication. The PSK MUST NOT be transmitted over the network and MUST NOT be used directly for encrypting plaintext.</td>
+</tr>
+<tr>
+<td align="left">Client Random Code</td>
+<td align="left">CRC</td>
+<td align="left">A randomly generated code by the client. MAY be transmitted in cleartext.</td>
+</tr>
+<tr>
+<td align="left">Server Random Code</td>
+<td align="left">SRC</td>
+<td align="left">A randomly generated code by the server. MAY be transmitted in cleartext.</td>
+</tr>
+<tr>
+<td align="left">Auth Secret Key</td>
+<td align="left">ASK</td>
+<td align="left">A 32-byte authentication key derived from PSK and CRC using HMAC-SHA256. Used for encrypting the initial handshake message from client.</td>
+</tr>
+<tr>
+<td align="left">Session Secret Key</td>
+<td align="left">SSK</td>
+<td align="left">A 32-byte session key derived from PSK and SRC using HMAC-SHA256. Used for all encryption after the server&#39;s handshake response until connection termination.</td>
+</tr>
+<tr>
+<td align="left">Key Identifier</td>
+<td align="left">KEY_ID</td>
+<td align="left">An identifier transmitted in cleartext that identifies which PSK to use. On the server side, each KEY_ID MUST correspond to exactly one PSK.</td>
+</tr>
+</tbody></table>
+<h2 id="4-protocol-overview">4. Protocol Overview</h2>
+<p>OSTP operates in two distinct phases:</p>
+<ol>
+<li><strong>Handshake Phase</strong>: Establishes authenticated session keys</li>
+<li><strong>Data Transfer Phase</strong>: Secures all subsequent data transmission</li>
+</ol>
+<p>The protocol uses AES-256-GCM for authenticated encryption with additional associated data (AAD).</p>
+<h2 id="5-key-derivation">5. Key Derivation</h2>
+<h3 id="51-ask-derivation">5.1. ASK Derivation</h3>
+<p>The Authentication Secret Key (ASK) SHALL be derived as follows:</p>
+<pre><code>ASK = HMAC-SHA256(key = PSK, plaintext = CRC)
+</code></pre>
+<p>Where:</p>
+<ul>
+<li>PSK is the 32-byte Pre-shared Secret Key</li>
+<li>CRC is the Client Random Code</li>
+<li>The output is exactly 32 bytes</li>
+</ul>
+<h3 id="52-ssk-derivation">5.2. SSK Derivation</h3>
+<p>The Session Secret Key (SSK) SHALL be derived as follows:</p>
+<pre><code>SSK = HMAC-SHA256(key = PSK, plaintext = SRC)
+</code></pre>
+<p>Where:</p>
+<ul>
+<li>PSK is the 32-byte Pre-shared Secret Key</li>
+<li>SRC is the Server Random Code</li>
+<li>The output is exactly 32 bytes</li>
+</ul>
+<h2 id="6-message-formats">6. Message Formats</h2>
+<h3 id="61-encryption-format">6.1. Encryption Format</h3>
+<p>All encryption SHALL use AES-256-GCM with the following parameters:</p>
+<pre><code>AES-256-GCM(plaintext, key, iv=nonce, aad=&#39;OSTP_GENERAL_AAD&#39;) 
+=&gt; nonce + encryptedData + authTag
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><code>nonce</code> is a randomly generated 12-byte value</li>
+<li><code>encryptedData</code> is the ciphertext</li>
+<li><code>authTag</code> is the 16-byte authentication tag</li>
+<li><code>aad</code> is set to the fixed string &#39;OSTP_GENERAL_AAD&#39;</li>
+</ul>
+<h3 id="62-client-handshake-message">6.2. Client Handshake Message</h3>
+<pre><code>[OSTP &lt;VERSION&gt;] &lt;KEY_ID&gt; &lt;CRC&gt; &lt;ENCRYPTED_AUTH_MSG&gt;
+</code></pre>
+<p>Fields:</p>
+<ul>
+<li><code>&lt;VERSION&gt;</code>: Protocol version string (e.g., &quot;1.0&quot;)</li>
+<li><code>&lt;KEY_ID&gt;</code>: Key identifier for PSK selection</li>
+<li><code>&lt;CRC&gt;</code>: Client Random Code (16-32 bytes recommended)</li>
+<li><code>&lt;ENCRYPTED_AUTH_MSG&gt;</code>: AES-256-GCM encrypted authentication message using ASK</li>
+</ul>
+<h3 id="63-server-handshake-response-success">6.3. Server Handshake Response (Success)</h3>
+<pre><code>[OSTP &lt;VERSION&gt;] &lt;SRC&gt; &lt;ENCRYPTED_MSG&gt;
+</code></pre>
+<p>Fields:</p>
+<ul>
+<li><code>&lt;VERSION&gt;</code>: Protocol version string</li>
+<li><code>&lt;SRC&gt;</code>: Server Random Code (16-32 bytes recommended)</li>
+<li><code>&lt;ENCRYPTED_MSG&gt;</code>: AES-256-GCM encrypted response message using SSK</li>
+</ul>
+<h3 id="64-server-handshake-response-failure">6.4. Server Handshake Response (Failure)</h3>
+<pre><code>[OSTP &lt;VERSION&gt;] &lt;STATUS_CODE&gt; &lt;FAILED_MSG&gt;
+</code></pre>
+<p>Fields:</p>
+<ul>
+<li><code>&lt;VERSION&gt;</code>: Protocol version string</li>
+<li><code>&lt;STATUS_CODE&gt;</code>: Numeric error code</li>
+<li><code>&lt;FAILED_MSG&gt;</code>: Human-readable error message</li>
+</ul>
+<h3 id="65-data-transfer-message">6.5. Data Transfer Message</h3>
+<pre><code>&lt;ENCRYPTED_MSG&gt;
+</code></pre>
+<p>Where:</p>
+<ul>
+<li><code>&lt;ENCRYPTED_MSG&gt;</code>: AES-256-GCM encrypted data using SSK</li>
+</ul>
+<h2 id="7-handshake-protocol">7. Handshake Protocol</h2>
+<h3 id="71-client-initialization">7.1. Client Initialization</h3>
+<ol>
+<li>The client SHALL generate a cryptographically secure random CRC</li>
+<li>The client SHALL derive ASK using PSK and CRC</li>
+<li>The client SHALL obtain the current UNIX timestamp</li>
+<li>The client SHALL form the plaintext: <code>Hello &lt;HOST&gt; &lt;TIMESTAMP&gt;</code><ul>
+<li><code>&lt;HOST&gt;</code> MUST be the server&#39;s IP address or domain name</li>
+<li><code>&lt;TIMESTAMP&gt;</code> MUST be the current UNIX timestamp as a string</li>
+</ul>
+</li>
+<li>The client SHALL encrypt this plaintext using ASK to produce ENCRYPTED_AUTH_MSG</li>
+<li>The client SHALL transmit: <code>[OSTP &lt;VERSION&gt;] &lt;KEY_ID&gt; &lt;CRC&gt; &lt;ENCRYPTED_AUTH_MSG&gt;</code></li>
+</ol>
+<h3 id="72-server-processing">7.2. Server Processing</h3>
+<ol>
+<li>The server SHALL parse the client message and extract KEY_ID, CRC, and ENCRYPTED_AUTH_MSG</li>
+<li>The server SHALL locate the corresponding PSK using KEY_ID</li>
+<li>The server SHALL derive ASK using the same method as the client</li>
+<li>The server SHALL decrypt ENCRYPTED_AUTH_MSG using ASK</li>
+<li>The server SHALL verify:<ul>
+<li>The decrypted text matches the pattern <code>Hello &lt;HOST&gt; &lt;TIMESTAMP&gt;</code></li>
+<li>The <code>&lt;HOST&gt;</code> value matches the server&#39;s expected identity</li>
+<li>The <code>&lt;TIMESTAMP&gt;</code> is within an acceptable time window (recommended: ±5 minutes from server time)</li>
+</ul>
+</li>
+</ol>
+<h3 id="73-server-response-success-case">7.3. Server Response (Success Case)</h3>
+<ol>
+<li>The server SHALL generate a cryptographically secure random SRC</li>
+<li>The server SHALL derive SSK using PSK and SRC</li>
+<li>The server SHALL obtain the current UNIX timestamp</li>
+<li>The server SHALL form the plaintext: <code>Hello Client from &lt;HOST&gt; &lt;TIMESTAMP&gt;</code></li>
+<li>The server SHALL encrypt this plaintext using SSK to produce ENCRYPTED_MSG</li>
+<li>The server SHALL transmit: <code>[OSTP &lt;VERSION&gt;] &lt;SRC&gt; &lt;ENCRYPTED_MSG&gt;</code></li>
+</ol>
+<h3 id="74-server-response-failure-case">7.4. Server Response (Failure Case)</h3>
+<p>If authentication fails at any point, the server SHALL transmit:
+<code>[OSTP &lt;VERSION&gt;] &lt;STATUS_CODE&gt; &lt;FAILED_MSG&gt;</code></p>
+<p>Recommended status codes:</p>
+<ul>
+<li>0x01: Authentication Failed</li>
+<li>0x02: Invalid Request</li>
+<li>0x03: Timestamp Out of Range</li>
+<li>0x04: Internal Server Error</li>
+</ul>
+<h3 id="75-client-final-verification">7.5. Client Final Verification</h3>
+<ol>
+<li>Upon receiving successful response, the client SHALL derive SSK using PSK and SRC</li>
+<li>The client SHALL decrypt ENCRYPTED_MSG using SSK</li>
+<li>The client SHALL verify:<ul>
+<li>The decrypted text matches the pattern <code>Hello Client from &lt;HOST&gt; &lt;TIMESTAMP&gt;</code></li>
+<li>The <code>&lt;TIMESTAMP&gt;</code> is within an acceptable time window (recommended: ±5 minutes from client time)</li>
+</ul>
+</li>
+</ol>
+<h2 id="8-data-transfer-protocol">8. Data Transfer Protocol</h2>
+<p>After successful handshake completion:</p>
+<ol>
+<li>Both client and server SHALL use SSK for all subsequent encryption</li>
+<li>All messages SHALL be encrypted as: <code>&lt;ENCRYPTED_MSG&gt;</code></li>
+<li>The same AES-256-GCM parameters SHALL be used as specified in Section 6.1</li>
+</ol>
+<h2 id="9-security-considerations">9. Security Considerations</h2>
+<h3 id="91-key-management">9.1. Key Management</h3>
+<ul>
+<li>PSKs MUST be securely distributed and stored</li>
+<li>PSKs MUST be 32 bytes in length</li>
+<li>KEY_ID values SHOULD not reveal information about the associated PSK</li>
+</ul>
+<h3 id="92-cryptographic-security">9.2. Cryptographic Security</h3>
+<ul>
+<li>CRC and SRC MUST be generated using cryptographically secure random number generators</li>
+<li>Nonces for AES-GCM MUST be unique for each encryption operation under the same key</li>
+<li>The same nonce MUST NEVER be reused with the same key</li>
+<li>Implementations MUST verify authentication tags before processing ciphertext</li>
+</ul>
+<h3 id="93-protocol-security">9.3. Protocol Security</h3>
+<ul>
+<li>The handshake protocol provides mutual authentication through proof of PSK knowledge</li>
+<li>Timestamp validation provides protection against replay attacks during handshake</li>
+<li>The timestamp window SHOULD be configurable based on security requirements</li>
+<li>Forward secrecy is NOT provided by this protocol</li>
+</ul>
+<h3 id="94-implementation-considerations">9.4. Implementation Considerations</h3>
+<ul>
+<li>Implementations SHOULD include rate limiting to prevent brute force attacks</li>
+<li>Failed authentication attempts SHOULD be logged</li>
+<li>Connections SHOULD be terminated after multiple authentication failures</li>
+</ul>
+<h2 id="10-iana-considerations">10. IANA Considerations</h2>
+<p>This document has no IANA actions.</p>
+<h2 id="license-and-copyright-notice">License and Copyright Notice</h2>
+<p>Copyright (c) 2025 orbitgw <a href="mailto:orbitgw@foxmail.com">orbitgw@foxmail.com</a> </p>
+<p>This document is authorized under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.</p>
+
+        </div>
+        <footer>
+            <div class="footer-item">© 2025 orbitgw - All rights reserved. - All documents are authorized under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.</div>
+        </footer>
+    </main>
+</body>
+</html>

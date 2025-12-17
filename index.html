@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="https://orbitgw.com/bootstrap/css/bootstrap.min.css">
+    <script src="https://orbitgw.com/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/css/main.css">
+    <title>OSTP | Home</title>
+</head>
+
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg bg-white">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">OSTP</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link" href="/spec/">Specifications</a>
+                <a class="nav-link" href="https://github.com/orbitgw/OSTP">Repository</a>
+            </div>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <div class="content">
+            <h1 id="orbitgws-secure-transfer-protocol">ORBITGW&#39;s Secure Transfer Protocol</h1>
+<h2 id="overview">Overview</h2>
+<p>OSTP (ORBITGW&#39;s Secure Transfer Protocol) is a secure transport layer protocol designed for reliable and authenticated data transmission over TCP connections. It provides strong security guarantees using pre-shared keys and modern cryptographic algorithms.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Mutual Authentication</strong>: Both client and server authenticate each other using pre-shared keys</li>
+<li><strong>Strong Encryption</strong>: Uses AES-256-GCM for authenticated encryption with integrity protection</li>
+<li><strong>Replay Protection</strong>: Timestamp-based validation prevents replay attacks</li>
+<li><strong>Forward Secrecy</strong>: Session keys are ephemeral and derived from random values</li>
+<li><strong>Simple Protocol</strong>: Clean and straightforward handshake mechanism</li>
+</ul>
+<h2 id="latest-specification">Latest Specification</h2>
+<p><a href="https://ostp.orbitgw.com/spec/0.1">ostp-specification-0.1</a></p>
+<h2 id="license-and-copyright-notice">License and Copyright Notice</h2>
+<p>Copyright (c) 2025 orbitgw <a href="mailto:orbitgw@foxmail.com">orbitgw@foxmail.com</a> </p>
+<p>All documents are authorized under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.</p>
+<hr>
+<p><strong>Note</strong>: This is an experimental protocol. Implementations should undergo thorough security review before deployment in production environments.</p>
+
+        </div>
+        <footer>
+            <div class="footer-item">© 2025 orbitgw - All rights reserved. - All documents are authorized under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.</div>
+        </footer>
+    </main>
+</body>
+</html>
